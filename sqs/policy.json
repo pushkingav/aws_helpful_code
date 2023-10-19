@@ -1,0 +1,25 @@
+{
+    "Version": "2012-10-17",
+    "Id": "example-ID",
+    "Statement": [
+        {
+            "Sid": "example-statement-ID",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "s3.amazonaws.com"
+            },
+            "Action": [
+                "SQS:SendMessage"
+            ],
+            "Resource": "arn:aws:sqs:us-east-1:805948085265:S3EventsQueue",
+            "Condition": {
+                "ArnLike": {
+                    "aws:SourceArn": "arn:aws:s3:*:*:demo-sqs-queue-access-policy-ap"
+                },
+                "StringEquals": {
+                    "aws:SourceAccount": "805948085265"
+                }
+            }
+        }
+    ]
+}

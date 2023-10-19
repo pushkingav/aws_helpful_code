@@ -1,0 +1,56 @@
+{
+    "version": "1.0",
+    "timestamp": "2023-06-06T09:53:00.674Z",
+    "requestContext": {
+        "requestId": "2902ca83-166c-4cd9-8fb2-6f4f29f86a29",
+        "functionArn": "arn:aws:lambda:us-east-1:805948085265:function:lambda-s3:$LATEST",
+        "condition": "Success",
+        "approximateInvokeCount": 1
+    },
+    "requestPayload": {
+        "Records": [
+            {
+                "eventVersion": "2.1",
+                "eventSource": "aws:s3",
+                "awsRegion": "us-east-1",
+                "eventTime": "2023-06-06T09:52:58.663Z",
+                "eventName": "ObjectCreated:Put",
+                "userIdentity": {
+                    "principalId": "AWS:AIDA3XJR72QIU2OVWC6G5"
+                },
+                "requestParameters": {
+                    "sourceIPAddress": "212.73.91.58"
+                },
+                "responseElements": {
+                    "x-amz-request-id": "M2RKHDSWZP05GYFC",
+                    "x-amz-id-2": "pQT6Y59wYBTK5A8+yuQCDrAMhRwYRQxWRiL7sgKPf6ov4eI6kqQaR0WmFvaS0sFxWLdWWOl8WtPvcQxbCAn3V2SlP44m9ET9"
+                },
+                "s3": {
+                    "s3SchemaVersion": "1.0",
+                    "configurationId": "DemoLambdaEvent",
+                    "bucket": {
+                        "name": "lambda-s3-bucket-ap",
+                        "ownerIdentity": {
+                            "principalId": "A38S5ZDZGDSRBB"
+                        },
+                        "arn": "arn:aws:s3:::lambda-s3-bucket-ap"
+                    },
+                    "object": {
+                        "key": "beach.jpg",
+                        "size": 87853,
+                        "eTag": "1c6defc638f71abd065d8dd2f450b207",
+                        "sequencer": "00647F01FA98019FAC"
+                    }
+                }
+            }
+        ]
+    },
+    "responseContext": {
+        "statusCode": 200,
+        "executedVersion": "$LATEST"
+    },
+    "responsePayload": {
+        "statusCode": 200,
+        "body": "\"Hello from Lambda!\""
+    }
+}

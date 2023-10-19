@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'StartupShutdownLambdaRole'
+      Description: An execution role for a Lambda function launched by CloudFormation
+      ManagedPolicyArns:
+        - !Ref LambdaPolicy
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action:
+          - 'sts:AssumeRole'    
+  
+  LambdaPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: 'StartupShutdownLambdaPolicy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ec2:Start*'
+              - 'ec2:Stop*'
+              - 'ec2:DescribeInstances'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogGroup'
+            Resource: !Join
+            - ':'
+            - - 'arn:aws:logs:us-east-1'
+              - !Ref AWS::AccountId
+              - '*'
+          - Effect: Allow
+            Action:    
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvent'
+            Resource: !Join 
+                - ':'
+                - - 'arn:aws:logs:us-east-1'
+                  - !Ref AWS::AccountId
+                  - 'log-group:/aws/lambda/ap-test-launch-lambda:*'
+
+  #Lambda function to startup or shutdown an Instance
+  StartupShutdownLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      MemorySize: 128
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaRole.Arn'
+      Environment:
+        Variables:
+          REGION: !Ref AWS::Region
+          EC2_ID: !Ref MyInstance
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+
+          region = os.environ["REGION"]
+          print("Region: " + region)
+          ec2Id = os.environ["EC2_ID"]
+          print("EC2_ID: " + ec2Id);
+          instances = [ec2Id]
+          print(instances)
+
+          ec2 = boto3.client('ec2', region_name=region)
+
+          def lambda_handler(event, context):
+            response = ec2.describe_instances(Filters=[
+              {
+                  'Name': 'instance-state-name',
+                  'Values': [
+                      'stopped',
+                      'running'
+                  ],
+              },
+            ],
+            InstanceIds=instances
+            )
+            print('The instance was ' + response['Reservations'][0]['Instances'][0]['State']['Name'])
+            action = ''
+            if response['Reservations'][0]['Instances'][0]['State']['Name'] == 'running':
+              ec2.stop_instances(InstanceIds=instances)
+              action = 'stopped'
+            if response['Reservations'][0]['Instances'][0]['State']['Name'] == 'stopped':
+              ec2.start_instances(InstanceIds=instances)
+              action = 'started'
+            print('Instance ' + instances[0] + ' is ' + action)  
+            return 'Instance ' + instances[0] + ' is ' + action
+
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: us-east-1a
+      ImageId: ami-00c6177f250e07ec1
+      InstanceType: t2.micro
+  
