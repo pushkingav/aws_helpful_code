@@ -1,1 +1,5 @@
-/.DS_Store
+/*.DS_Store
+aws-serverless-workshop/environment/sam-cookiecutter-2023-09-18.zip
+aws-serverless-workshop/environment/__MACOSX/start_state/._.DS_Store
+aws-serverless-workshop/environment/__MACOSX/start_state/{{cookiecutter.project_name}}/._.DS_Store
+aws-serverless-workshop/environment/ws-serverless-patterns/.DS_Store

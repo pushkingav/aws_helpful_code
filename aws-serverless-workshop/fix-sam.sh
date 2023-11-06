@@ -7,3 +7,5 @@ unzip sam-cookiecutter-2023-09-18.zip
 echo '{"project_name": "ServerlessWorkshop", "runtime": "python3.9", "architectures": {"value": ["x86_64"]}}' > ./start_state/cookiecutter.json
 
 sam init --name "ws-serverless-patterns" --location ./start_state/
+
+#https://catalog.workshops.aws/serverless-patterns/en-US/business-scenario

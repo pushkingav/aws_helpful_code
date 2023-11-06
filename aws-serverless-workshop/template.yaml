@@ -1,0 +1,219 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  SAM Template for Serverless Patterns v3 Connect API
+Outputs:
+  UsersTable:
+    Description: DynamoDB Users table
+    Value: !Ref UsersTable
+  UsersFunction:
+    Description: Lambda function used to perform actions on the users? data
+    Value: !Ref UsersFunction
+  APIEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${RestAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod'
+Resources:
+  UsersFunction:
+    Type: 'AWS::Lambda::Function'
+    Metadata:
+      SamResourceId: UsersFunction
+    Properties:
+      Code:
+        S3Bucket: aws-sam-cli-managed-default-samclisourcebucket-c843h0dkyybu
+        S3Key: ws-serverless-patterns-users/614fda1d00daa6d5a6ce4d52bdccd727
+      Description: Handler for all users related operations
+      Handler: src/api/users.lambda_handler
+      MemorySize: 128
+      Role: !GetAtt 
+        - UsersFunctionRole
+        - Arn
+      Runtime: python3.9
+      Timeout: 100
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+      Tags:
+        - Key: 'lambda:createdBy'
+          Value: SAM
+        - Key: Stack
+          Value: !Sub '${AWS::StackName}'
+      TracingConfig:
+        Mode: Active
+  UsersFunctionUpdateUserEventPermissionProd:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref UsersFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - >-
+          arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/PUT/users/*
+        - __ApiId__: !Ref RestAPI
+          __Stage__: '*'
+  RestAPIDeploymente1f6ff085e:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      Description: 'RestApi deployment id: e1f6ff085eb06a51075b97437f81d7179dc29971'
+      RestApiId: !Ref RestAPI
+      StageName: Stage
+  UsersFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - 'arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess'
+      Policies:
+        - PolicyName: UsersFunctionRolePolicy0
+          PolicyDocument:
+            Statement:
+              - Action:
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:DeleteItem'
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:Scan'
+                  - 'dynamodb:Query'
+                  - 'dynamodb:UpdateItem'
+                  - 'dynamodb:BatchWriteItem'
+                  - 'dynamodb:BatchGetItem'
+                  - 'dynamodb:DescribeTable'
+                  - 'dynamodb:ConditionCheckItem'
+                Effect: Allow
+                Resource:
+                  - !Sub 
+                    - >-
+                      arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tableName}
+                    - tableName: !Ref UsersTable
+                  - !Sub 
+                    - >-
+                      arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tableName}/index/*
+                    - tableName: !Ref UsersTable
+      Tags:
+        - Key: 'lambda:createdBy'
+          Value: SAM
+        - Key: Stack
+          Value: !Sub '${AWS::StackName}'
+  UsersFunctionPutUserEventPermissionProd:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref UsersFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - >-
+          arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/POST/users
+        - __ApiId__: !Ref RestAPI
+          __Stage__: '*'
+  UsersTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Sub '${AWS::StackName}-Users'
+      AttributeDefinitions:
+        - AttributeName: userid
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userid
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+    Metadata:
+      SamResourceId: UsersTable
+  RestAPI:
+    Type: 'AWS::ApiGateway::RestApi'
+    Metadata:
+      SamResourceId: RestAPI
+    Properties:
+      Body:
+        info:
+          version: '1.0'
+          title: !Ref 'AWS::StackName'
+        paths:
+          '/users/{userid}':
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UsersFunction.Arn}/invocations
+              responses: {}
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UsersFunction.Arn}/invocations
+              responses: {}
+            delete:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UsersFunction.Arn}/invocations
+              responses: {}
+          /users:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UsersFunction.Arn}/invocations
+              responses: {}
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub >-
+                  arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UsersFunction.Arn}/invocations
+              responses: {}
+        swagger: '2.0'
+  UsersFunctionDeleteUserEventPermissionProd:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref UsersFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - >-
+          arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/DELETE/users/*
+        - __ApiId__: !Ref RestAPI
+          __Stage__: '*'
+  UsersFunctionGetUserEventPermissionProd:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref UsersFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - >-
+          arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/users/*
+        - __ApiId__: !Ref RestAPI
+          __Stage__: '*'
+  RestAPIProdStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      DeploymentId: !Ref RestAPIDeploymente1f6ff085e
+      RestApiId: !Ref RestAPI
+      StageName: Prod
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-API'
+        - Key: Stack
+          Value: !Sub '${AWS::StackName}'
+      TracingEnabled: true
+  UsersFunctionGetUsersEventPermissionProd:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref UsersFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - >-
+          arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/GET/users
+        - __ApiId__: !Ref RestAPI
+          __Stage__: '*'
